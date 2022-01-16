@@ -16,6 +16,7 @@ services:
       MYSQL_ROOT_PASSWORD: narouDB
       MYSQL_DATABASE: narou_db
       TZ: "Asia/Tokyo"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_520_ci
 #     logging:
 #     driver: "syslog"
 #     options:
