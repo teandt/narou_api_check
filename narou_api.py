@@ -2,6 +2,7 @@ import json
 import requests
 import gzip
 import pymysql.cursors
+import datetime
 
 
 url = "http://api.syosetu.com/novelapi/api/"
@@ -40,34 +41,39 @@ def check_count():
 
 
 cnt = check_count()
-
-# try:
-#     db = db_connect()
-#     with db.cursor() as cursor:
-#         for i in res_json:
-#             if("ncode" in i):
-#                 sql = "INSERT INTO contents_tbl SET count = %s, ncode = %s, title = %s"
-#                 cursor.execute(sql, (cnt + 1, i["ncode"], i["title"]))
-        
-#         sql = "UPDATE parameter_tbl SET parameter_value = %s WHERE parameter_name = 'counter'"
-#         cursor.execute(sql, (cnt + 1))
-# except:
-#     db.rollback()
-#     db.close()
-# else:
-#     db.commit()
-#     db.close()
-
+timestamp = datetime.datetime.now().isoformat(timespec='seconds')
 
 try:
     db = db_connect()
     with db.cursor() as cursor:
-        sql = "SELECT title FROM contents_tbl WHERE count=%s"
-        cursor.execute(sql,(cnt))
-        result = cursor.fetchall()
-        for i in result:
-            print(i["title"])
+        for i in res_json:
+            if("ncode" in i):
+                sql = "INSERT INTO contents_tbl SET count = %s, ncode = %s, title = %s"
+                cursor.execute(sql, (cnt + 1, i["ncode"], i["title"]))
+        
+        sql = "UPDATE parameter_tbl SET parameter_value = %s WHERE parameter_name = 'counter'"
+        cursor.execute(sql, (cnt + 1))
+
+        sql = "INSERT INTO count_timestamp_tbl SET count = %s, timestamp = %s"
+        cursor.execute(sql, (cnt + 1, timestamp))
 except:
+    print("error rollback")
+    db.rollback()
     db.close()
 else:
+    db.commit()
     db.close()
+
+
+# try:
+#     db = db_connect()
+#     with db.cursor() as cursor:
+#         sql = "SELECT title FROM contents_tbl WHERE count=%s"
+#         cursor.execute(sql,(cnt))
+#         result = cursor.fetchall()
+#         for i in result:
+#             print(i["title"])
+# except:
+#     db.close()
+# else:
+#     db.close()
