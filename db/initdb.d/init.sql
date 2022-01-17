@@ -20,7 +20,28 @@ CREATE TABLE IF NOT EXISTS contents_tbl
     length  INT,
     time    INT,
     isstop  INT,
-    isr15   INT
+    isr15   INT,
+    isbl    INT,
+    isgl    INT,
+    iszankoku   INT,
+    istensei    INT,
+    istenni INT,
+    pc_or_k INT,
+    global_point    INT,
+    daily_point INT,
+    weekly_point    INT,
+    monthly_point   INT,
+    quarter_point   INT,
+    yearly_point    INT,
+    fav_novel_cnt   INT,
+    impression_cnt  INT,
+    review_cnt  INT,
+    all_point   INT,
+    all_hyoka_cnt   INT,
+    sasie_cnt   INT,
+    kaiwaritu   INT,
+    novelupdated_at DATETIME,
+    updated_at  DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS parameter_tbl
@@ -37,3 +58,8 @@ CREATE TABLE IF NOT EXISTS count_timestamp_tbl
     timestamp   DATETIME NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS count_allcount_tbl
+(
+    count   INT NOT NULL,
+    allcount    INT
+);
