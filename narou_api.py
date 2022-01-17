@@ -84,16 +84,3 @@ else:
     db.commit()
 finally:
     db.close()
-
-# try:
-#     db = db_connect()
-#     with db.cursor() as cursor:
-#         sql = "SELECT title FROM contents_tbl WHERE count=%s"
-#         cursor.execute(sql,(cnt))
-#         result = cursor.fetchall()
-#         for i in result:
-#             print(i["title"])
-# except:
-#     db.close()
-# else:
-#     db.close()
