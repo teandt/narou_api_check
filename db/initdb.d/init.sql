@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS contents_tbl
     title   VARCHAR(200),
     userid  INT,
     writer  VARCHAR(1000),
-    story   VARCHAR(1000),
+    story   VARCHAR(3000),
     biggenre    INT,
     genre   INT,
     gensaku VARCHAR(10),
