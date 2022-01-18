@@ -84,11 +84,14 @@ if __name__ == "__main__":
                 retry = retry + 1
                 time.sleep(10)
 
-        # delete allcount data
+        # 取得したデータをjsonとして読み込んだあとallcountを削除
         cont = gzip.decompress(res.content).decode("utf-8")
         res_json = json.loads(cont)
         del res_json[0]
-        data.append(res_json)
+
+        # そのままappendすると配列として追加されるのでデータ単位で追加
+        for j in res_json:
+            data.append(j)
         
         last_general_lastup = res_json[-1]["general_lastup"]
         lastup = datetime.datetime.strptime(last_general_lastup, "%Y-%m-%d %H:%M:%S").timestamp()
@@ -97,7 +100,7 @@ if __name__ == "__main__":
 
     with open("temp.json", "w") as f:
         json.dump(data, f, ensure_ascii = False, indent = 4)
-
+  
     exit()
 
 
