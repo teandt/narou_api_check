@@ -1,0 +1,150 @@
+import json
+import requests
+import gzip
+import datetime
+import pymysql.cursors
+import datetime
+import time
+
+url = "http://api.syosetu.com/novelapi/api/"
+
+def get_allcount():
+    payload = {"out": "json", "gzip": "5","lim": "1"}
+
+    retry = 0
+    while retry < 5:
+        try:
+            res = requests.get(url, params=payload)
+            break
+        except:
+            print("connection error: not get allcount")
+            retry = retry + 1
+            time.sleep(10)
+
+    cont = gzip.decompress(res.content).decode("utf-8")
+    res_json = json.loads(cont)
+    allcount = int(res_json[0]["allcount"])
+
+    return allcount
+
+def db_connect():
+    db = pymysql.connect(host='127.0.0.1',
+                        port=23306,
+                        user='narouDB',
+                        password='narouDB',
+                        database='narou_db',
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor)
+    return db
+
+def check_count():
+    db = db_connect()
+
+    try:
+        with db.cursor() as cursor:
+            sql = "SELECT parameter_value  FROM parameter_tbl WHERE parameter_name='counter'"
+            cursor.execute(sql)
+            data = cursor.fetchone()
+            if data == None:
+                print("counter value data is none")
+                return -1
+            else:
+                result = data
+    finally:
+        db.close()
+    
+    return result["parameter_value"]
+
+
+# ========================================================================================================================== #
+if __name__ == "__main__":
+
+    lastup = int(datetime.datetime.now().timestamp())
+    #allcount = get_allcount()
+
+    try:
+        with open("temp.json", "r") as f:
+            data = json.load(f)
+    except:
+        print("error not open file")
+        exit()
+
+    cnt = check_count()
+    if cnt >= 0:
+        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+    else:
+        print("error cnt value")
+        exit()
+
+    try:
+        db = db_connect()
+        chk = []
+        set_sql_data = []
+        with db.cursor() as cursor:
+            sql = "UPDATE parameter_tbl SET parameter_value = %s WHERE parameter_name = 'counter'"
+            cursor.execute(sql, (cnt + 1))
+
+            sql = "INSERT INTO count_timestamp_tbl SET count = %s, timestamp = %s"
+            cursor.execute(sql, (cnt + 1, timestamp))
+
+            #sql = "INSERT INTO count_allcount_tbl SET count = %s, allcount = %s"
+            #cursor.execute(sql, (cnt + 1, allcount))
+
+            print("start: ", datetime.datetime.now())    
+            bulk_cnt = 0
+            for i in data:
+                chk = i
+                if(bulk_cnt < 1000):
+                    if("ncode" in i):
+                        set_sql_data_tmp = (cnt + 1, i["ncode"], i["title"], i["userid"], i["writer"], i["story"], i["biggenre"], i["genre"],\
+                                            i["gensaku"], i["keyword"], i["general_firstup"], i["general_lastup"], i["novel_type"], i["end"], i["general_all_no"], \
+                                            i["length"], i["time"], i["isstop"], i["isr15"], i["isbl"], i["isgl"], i["iszankoku"], i["istensei"], i["istenni"], \
+                                            i["pc_or_k"], i["global_point"], i["daily_point"], i["weekly_point"], i["monthly_point"], \
+                                            i["quarter_point"], i["yearly_point"], i["fav_novel_cnt"], i["impression_cnt"], i["review_cnt"], i["all_point"], \
+                                            i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"])
+                        set_sql_data.append(set_sql_data_tmp)
+                        bulk_cnt = bulk_cnt + 1
+                else:
+                    sql = "INSERT INTO contents_tbl \
+                        (count , ncode , title , userid , writer , story , biggenre , genre , \
+                        gensaku , keyword , general_firstup , general_lastup , novel_type , end , general_all_no , \
+                        length , time , isstop , isr15 , isbl , isgl , iszankoku , istensei , istenni , \
+                        pc_or_k , global_point , daily_point , weekly_point , monthly_point , \
+                        quarter_point , yearly_point , fav_novel_cnt , impression_cnt , review_cnt , all_point , \
+                        all_hyoka_cnt , sasie_cnt , kaiwaritu , novelupdated_at , updated_at) \
+                        VALUES (    %s, %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s )"
+
+                    cursor.executemany(sql, set_sql_data)
+                    set_sql_data.clear()
+                    bulk_cnt = 0
+            
+            sql = "INSERT INTO contents_tbl \
+                (count , ncode , title , userid , writer , story , biggenre , genre , \
+                gensaku , keyword , general_firstup , general_lastup , novel_type , end , general_all_no , \
+                length , time , isstop , isr15 , isbl , isgl , iszankoku , istensei , istenni , \
+                pc_or_k , global_point , daily_point , weekly_point , monthly_point , \
+                quarter_point , yearly_point , fav_novel_cnt , impression_cnt , review_cnt , all_point , \
+                all_hyoka_cnt , sasie_cnt , kaiwaritu , novelupdated_at , updated_at) \
+                VALUES (    %s, %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s )"
+
+            cursor.executemany(sql, set_sql_data)
+            print("end: ", datetime.datetime.now())    
+
+    except:
+        print("error rollback")
+        print(chk)
+        db.rollback()
+    else:
+        db.commit()
+    finally:
+        db.close()

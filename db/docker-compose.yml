@@ -10,6 +10,7 @@ services:
     volumes:
       - narou_api_mariadb:/var/lib/mysql
       - ./initdb.d:/docker-entrypoint-initdb.d
+      - ./dbconfig:/etc/mysql/conf.d
     environment:
       MYSQL_USER: narouDB
       MYSQL_PASSWORD: narouDB
