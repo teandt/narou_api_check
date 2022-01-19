@@ -79,6 +79,7 @@ if __name__ == "__main__":
     try:
         db = db_connect()
         chk = []
+        set_sql_data = []
         with db.cursor() as cursor:
             sql = "UPDATE parameter_tbl SET parameter_value = %s WHERE parameter_name = 'counter'"
             cursor.execute(sql, (cnt + 1))
@@ -92,18 +93,30 @@ if __name__ == "__main__":
             for i in data:
                 chk = i
                 if("ncode" in i):
-                    sql = "INSERT INTO contents_tbl SET count = %s, ncode = %s, title = %s, userid = %s, writer = %s, story = %s, biggenre = %s, genre = %s, \
-                        gensaku = %s, keyword = %s, general_firstup = %s, general_lastup = %s, novel_type = %s, end = %s, general_all_no = %s, \
-                        length = %s, time = %s, isstop = %s, isr15 = %s, isbl = %s, isgl = %s, iszankoku = %s, istensei = %s, istenni = %s, \
-                        pc_or_k = %s, global_point = %s, daily_point = %s, weekly_point = %s, monthly_point = %s, \
-                        quarter_point = %s, yearly_point = %s, fav_novel_cnt = %s, impression_cnt = %s, review_cnt = %s, all_point = %s, \
-                        all_hyoka_cnt = %s, sasie_cnt = %s, kaiwaritu = %s, novelupdated_at = %s, updated_at = %s"
-                    cursor.execute(sql, (cnt + 1, i["ncode"], i["title"], i["userid"], i["writer"], i["story"], i["biggenre"], i["genre"],\
+                    set_sql_data_tmp = (cnt + 1, i["ncode"], i["title"], i["userid"], i["writer"], i["story"], i["biggenre"], i["genre"],\
                                         i["gensaku"], i["keyword"], i["general_firstup"], i["general_lastup"], i["novel_type"], i["end"], i["general_all_no"], \
                                         i["length"], i["time"], i["isstop"], i["isr15"], i["isbl"], i["isgl"], i["iszankoku"], i["istensei"], i["istenni"], \
                                         i["pc_or_k"], i["global_point"], i["daily_point"], i["weekly_point"], i["monthly_point"], \
                                         i["quarter_point"], i["yearly_point"], i["fav_novel_cnt"], i["impression_cnt"], i["review_cnt"], i["all_point"], \
-                                        i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"]))
+                                        i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"])
+                    set_sql_data.append(set_sql_data_tmp)
+            
+            sql = "INSERT INTO contents_tbl \
+                (count , ncode , title , userid , writer , story , biggenre , genre , \
+                gensaku , keyword , general_firstup , general_lastup , novel_type , end , general_all_no , \
+                length , time , isstop , isr15 , isbl , isgl , iszankoku , istensei , istenni , \
+                pc_or_k , global_point , daily_point , weekly_point , monthly_point , \
+                quarter_point , yearly_point , fav_novel_cnt , impression_cnt , review_cnt , all_point , \
+                all_hyoka_cnt , sasie_cnt , kaiwaritu , novelupdated_at , updated_at) \
+                VALUES (    %s, %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s, %s, \
+                            %s, %s, %s, %s, %s )"
+                
+            cursor.executemany(sql, set_sql_data)
+
     except:
         print("error rollback")
         print(chk)
