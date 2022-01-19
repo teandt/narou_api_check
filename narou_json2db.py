@@ -90,16 +90,38 @@ if __name__ == "__main__":
             #sql = "INSERT INTO count_allcount_tbl SET count = %s, allcount = %s"
             #cursor.execute(sql, (cnt + 1, allcount))
 
+            print("start: ", datetime.datetime.now())    
+            bulk_cnt = 0
             for i in data:
                 chk = i
-                if("ncode" in i):
-                    set_sql_data_tmp = (cnt + 1, i["ncode"], i["title"], i["userid"], i["writer"], i["story"], i["biggenre"], i["genre"],\
-                                        i["gensaku"], i["keyword"], i["general_firstup"], i["general_lastup"], i["novel_type"], i["end"], i["general_all_no"], \
-                                        i["length"], i["time"], i["isstop"], i["isr15"], i["isbl"], i["isgl"], i["iszankoku"], i["istensei"], i["istenni"], \
-                                        i["pc_or_k"], i["global_point"], i["daily_point"], i["weekly_point"], i["monthly_point"], \
-                                        i["quarter_point"], i["yearly_point"], i["fav_novel_cnt"], i["impression_cnt"], i["review_cnt"], i["all_point"], \
-                                        i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"])
-                    set_sql_data.append(set_sql_data_tmp)
+                if(bulk_cnt < 1000):
+                    if("ncode" in i):
+                        set_sql_data_tmp = (cnt + 1, i["ncode"], i["title"], i["userid"], i["writer"], i["story"], i["biggenre"], i["genre"],\
+                                            i["gensaku"], i["keyword"], i["general_firstup"], i["general_lastup"], i["novel_type"], i["end"], i["general_all_no"], \
+                                            i["length"], i["time"], i["isstop"], i["isr15"], i["isbl"], i["isgl"], i["iszankoku"], i["istensei"], i["istenni"], \
+                                            i["pc_or_k"], i["global_point"], i["daily_point"], i["weekly_point"], i["monthly_point"], \
+                                            i["quarter_point"], i["yearly_point"], i["fav_novel_cnt"], i["impression_cnt"], i["review_cnt"], i["all_point"], \
+                                            i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"])
+                        set_sql_data.append(set_sql_data_tmp)
+                        bulk_cnt = bulk_cnt + 1
+                else:
+                    sql = "INSERT INTO contents_tbl \
+                        (count , ncode , title , userid , writer , story , biggenre , genre , \
+                        gensaku , keyword , general_firstup , general_lastup , novel_type , end , general_all_no , \
+                        length , time , isstop , isr15 , isbl , isgl , iszankoku , istensei , istenni , \
+                        pc_or_k , global_point , daily_point , weekly_point , monthly_point , \
+                        quarter_point , yearly_point , fav_novel_cnt , impression_cnt , review_cnt , all_point , \
+                        all_hyoka_cnt , sasie_cnt , kaiwaritu , novelupdated_at , updated_at) \
+                        VALUES (    %s, %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s, %s, \
+                                    %s, %s, %s, %s, %s )"
+
+                    cursor.executemany(sql, set_sql_data)
+                    set_sql_data.clear()
+                    bulk_cnt = 0
             
             sql = "INSERT INTO contents_tbl \
                 (count , ncode , title , userid , writer , story , biggenre , genre , \
@@ -115,7 +137,6 @@ if __name__ == "__main__":
                             %s, %s, %s, %s, %s, %s, \
                             %s, %s, %s, %s, %s )"
 
-            print("start: ", datetime.datetime.now())    
             cursor.executemany(sql, set_sql_data)
             print("end: ", datetime.datetime.now())    
 
