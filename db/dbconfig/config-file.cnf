@@ -1,0 +1,34 @@
+[mysqld]
+skip-name-resolve
+lower_case_table_names = 1
+
+#character_set_database = utf8mb4
+#character_set_filesystem = binary
+character_set_server = utf8mb4
+#character_set_system = utf8mb4
+collation-server = utf8mb4_unicode_520_ci
+
+max_connections = 50
+thread_cache_size = 50
+
+innodb_file_per_table = 1
+innodb_file_format = Barracuda
+innodb_large_prefix = 1
+innodb_flush_log_at_trx_commit = 1
+
+# グローバルバッファ
+key_buffer_size = 1G # 調整
+innodb_buffer_pool_size = 4G # まず調整
+innodb_log_buffer_size = 512M
+max_heap_table_size = 512M
+tmp_table_size = 512M
+query_cache_size = 128M # 調整
+
+# スレッドバッファ
+read_rnd_buffer_size = 16M
+sort_buffer_size = 32M
+read_buffer_size = 1M
+join_buffer_size = 1M
+
+# その他
+expire_logs_days = 3
