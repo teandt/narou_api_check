@@ -114,8 +114,10 @@ if __name__ == "__main__":
                             %s, %s, %s, %s, %s, \
                             %s, %s, %s, %s, %s, %s, \
                             %s, %s, %s, %s, %s )"
-                
+
+            print("start: ", datetime.datetime.now())    
             cursor.executemany(sql, set_sql_data)
+            print("end: ", datetime.datetime.now())    
 
     except:
         print("error rollback")
