@@ -92,12 +92,10 @@ if __name__ == "__main__":
         res_json = json.loads(cont)
         del res_json[0]
 
-        # そのままappendすると配列として追加されるのでデータ単位で追加
-        for j in res_json:
-            #data.append(j)
-            df_data_temp = pd.json_normalize(j)
-            df_data = pd.concat([df_data, df_data_temp], ignore_index=True)
-                    
+        # 不要データをあとで削除できるようにDataframeに入れて管理
+        df_data_temp = pd.json_normalize(res_json)
+        df_data = pd.concat([df_data, df_data_temp], ignore_index=True)
+
         last_general_lastup = res_json[-1]["general_lastup"]
         lastup = datetime.datetime.strptime(last_general_lastup, "%Y-%m-%d %H:%M:%S").timestamp()
         lastup = int(lastup)
