@@ -92,7 +92,8 @@ if __name__ == "__main__":
 
             print("start: ", datetime.datetime.now())    
             bulk_cnt = 0
-            for i in data:
+            for index in data:
+                i = data[index]
                 chk = i
                 if(bulk_cnt < 1000):
                     if("ncode" in i):
@@ -104,6 +105,9 @@ if __name__ == "__main__":
                                             i["all_hyoka_cnt"], i["sasie_cnt"], i["kaiwaritu"], i["novelupdated_at"], i["updated_at"])
                         set_sql_data.append(set_sql_data_tmp)
                         bulk_cnt = bulk_cnt + 1
+                    else:
+                        print("erro: not have ncode")
+                        exit()
                 else:
                     sql = "INSERT INTO contents_tbl \
                         (count , ncode , title , userid , writer , story , biggenre , genre , \
