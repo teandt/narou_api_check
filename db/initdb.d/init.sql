@@ -44,6 +44,12 @@ CREATE TABLE IF NOT EXISTS contents_tbl
     updated_at  DATETIME
 );
 
+CREATE INDEX idx_ncode ON contents_tbl(ncode);
+CREATE INDEX idx_first_lastup ON contents_tbl(general_firstup);
+CREATE INDEX idx_general_lastup ON contents_tbl(general_lastup);
+CREATE INDEX idx_userid ON contents_tbl(userid);
+
+
 CREATE TABLE IF NOT EXISTS parameter_tbl
 (
     parameter_name  VARCHAR(30) NOT NULL,
