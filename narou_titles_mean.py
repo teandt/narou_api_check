@@ -1,4 +1,3 @@
-from opcode import stack_effect
 import pymysql.cursors
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,10 +38,10 @@ def get_title_length_hist():
         db = db_connect()
         chk = []
         set_sql_data = []
-        start_year = 2021
-        end_year = 2021
+        start_year = 2022
+        end_year = 2022
         with db.cursor() as cursor:            
-            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 500"
+            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 100"
             cursor.execute(sql, (start_year, end_year,))
             print(cursor._executed)
             res = cursor.fetchall()
@@ -75,8 +74,8 @@ def get_title_length_mean():
         mean_data = []
         df_mean = pd.DataFrame(columns=["len"])
         start_year = 2004
-        end_year = 2021
-        limit_size = 500
+        end_year = 2022
+        limit_size = 10
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, %s"
@@ -109,5 +108,6 @@ def get_title_length_mean():
 # ========================================================================================================================== #
 if __name__ == "__main__":
 
-    get_title_length_mean()
+    #get_title_length_mean()
+    get_title_length_hist()
 

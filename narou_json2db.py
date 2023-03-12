@@ -28,8 +28,8 @@ def get_allcount():
     return allcount
 
 def db_connect():
-    db = pymysql.connect(host='127.0.0.1',
-                        port=23306,
+    db = pymysql.connect(host='narou_api_mariadb',
+                        port=3306,
                         user='narouDB',
                         password='narouDB',
                         database='narou_db',
