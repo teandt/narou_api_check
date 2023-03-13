@@ -109,8 +109,6 @@ def get_title_length_mean():
 def get_nobel_type_nums():
     try:
         db = db_connect()
-        chk = []
-        result = []
         df = pd.DataFrame(columns=["long", "short"])
         start_year = 2004
         end_year = 2022
@@ -138,7 +136,6 @@ def get_nobel_type_nums():
     except:
         print("error")
         print(cursor._executed)
-        print(chk)
     finally:
         db.close()
 
