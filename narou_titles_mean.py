@@ -41,7 +41,7 @@ def get_title_length_hist():
         start_year = 2022
         end_year = 2022
         with db.cursor() as cursor:            
-            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 100"
+            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 10000"
             cursor.execute(sql, (start_year, end_year,))
             print(cursor._executed)
             res = cursor.fetchall()
