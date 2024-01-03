@@ -38,8 +38,8 @@ def get_title_length_hist():
         db = db_connect()
         chk = []
         set_sql_data = []
-        start_year = 2022
-        end_year = 2022
+        start_year = 2020
+        end_year = 2020
         with db.cursor() as cursor:            
             sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 100"
             cursor.execute(sql, (start_year, end_year,))
@@ -56,8 +56,10 @@ def get_title_length_hist():
         df = pd.DataFrame(result)
         df["len"].hist()
         print( df["len"].describe() )
-
-        plt.show()    
+        
+        plt.xlim(0,100)
+        plt.show()
+        plt.savefig("hist_{}-{}.png".format(start_year, end_year))
 
     except:
         print("error")
@@ -74,8 +76,8 @@ def get_title_length_mean():
         mean_data = []
         df_mean = pd.DataFrame(columns=["len"])
         start_year = 2004
-        end_year = 2022
-        limit_size = 10
+        end_year = 2023
+        limit_size = 10000
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, %s"
@@ -96,7 +98,10 @@ def get_title_length_mean():
             plt.xlim(start_year, end_year)
             
             plt.plot(df_mean)
+            plt.xticks(range(start_year, end_year+1, int((end_year-start_year)/5)))
+            plt.ylim(0, 50)
             plt.show()
+            plt.savefig("plot_top{}.png".format(limit_size))
 
     except:
         print("error")

@@ -111,7 +111,7 @@ def get_nobel_type_nums():
         db = db_connect()
         df = pd.DataFrame(columns=["long", "short"])
         start_year = 2004
-        end_year = 2022
+        end_year = 2023
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "select count(*) from contents_tbl where novel_type = 1 and general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59'"
@@ -126,9 +126,11 @@ def get_nobel_type_nums():
 
 
         plt.xlim(start_year, end_year)
-        
+        plt.xticks(range(start_year, end_year+1, int((end_year-start_year)/5)))
+
         plt.plot(df)
         plt.show()
+        plt.savefig("nobel_type_{}-{}".format(start_year, end_year))
 
         print(df)
 
