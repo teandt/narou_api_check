@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 url = "http://api.syosetu.com/novelapi/api/"
 
 def db_connect():
-    db = pymysql.connect(host='narou_api_mariadb',
+    db = pymysql.connect(host='localhost',
                         port=3306,
                         user='narouDB',
                         password='narouDB',
