@@ -1,0 +1,35 @@
+version: '3'
+services:
+        narou-api-dev:
+                build:
+                      context: .
+                      dockerfile: Dockerfile
+                      args:
+                                UID: 1000
+                                GID: 1000
+                                USERNAME: dev
+                                GROUPNAME: dev
+                container_name: narou-api-dev
+                tty : true
+                volumes:
+                        - ./:/code
+
+        narou_api_db:
+                image: mariadb:latest
+                container_name: narou_api_mariadb
+                hostname: narou_api_mariadb
+                volumes:
+                - narou_api_mariadb:/var/lib/mysql
+                - ./db/initdb.d:/docker-entrypoint-initdb.d
+                - ./db/dbconfig:/etc/mysql/conf.d
+                environment:
+                        MYSQL_USER: ${MYSQL_USER}
+                        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+                        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+                        MYSQL_DATABASE: ${MYSQL_DATABASE}
+                        TZ: "Asia/Tokyo"
+                command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_520_ci
+
+volumes:
+  narou_api_mariadb:
+
