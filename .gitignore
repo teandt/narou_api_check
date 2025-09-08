@@ -2,3 +2,4 @@
 *.txt
 img/
 .env
+venv
