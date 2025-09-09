@@ -2,10 +2,9 @@ import json
 import requests
 import gzip
 import datetime
-import pymysql.cursors
 import datetime
 import time
-import pandas as pd
+import db_func
 
 url = "http://api.syosetu.com/novelapi/api/"
 
@@ -28,18 +27,8 @@ def get_allcount():
 
     return allcount
 
-def db_connect():
-    db = pymysql.connect(host='localhost',
-                        port=3306,
-                        user='narouDB',
-                        password='narouDB',
-                        database='narou_db',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
-    return db
-
 def check_count():
-    db = db_connect()
+    db = db_func.db_connect()
 
     try:
         with db.cursor() as cursor:
