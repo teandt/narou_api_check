@@ -1,23 +1,11 @@
-import pymysql.cursors
 import pandas as pd
 import matplotlib.pyplot as plt
-import re
-
+import db_func
 
 url = "http://api.syosetu.com/novelapi/api/"
 
-def db_connect():
-    db = pymysql.connect(host='narou_api_mariadb',
-                        port=3306,
-                        user='narouDB',
-                        password='narouDB',
-                        database='narou_db',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
-    return db
-
 def check_count():
-    db = db_connect()
+    db = db_func.db_connect()
 
     try:
         with db.cursor() as cursor:
@@ -36,7 +24,7 @@ def check_count():
 
 def get_title_length_hist():
     try:
-        db = db_connect()
+        db = db_func.db_connect()
         chk = []
         set_sql_data = []
         start_year = 2022
@@ -70,7 +58,7 @@ def get_title_length_hist():
 
 def get_title_length_mean():
     try:
-        db = db_connect()
+        db = db_func.db_connect()
         chk = []
         mean_data = []
         df_mean = pd.DataFrame(columns=["len"])
@@ -108,7 +96,7 @@ def get_title_length_mean():
 
 def get_nobel_type_nums():
     try:
-        db = db_connect()
+        db = db_func.db_connect()
         df = pd.DataFrame(columns=["long", "short"])
         start_year = 2004
         end_year = 2024

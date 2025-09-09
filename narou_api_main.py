@@ -2,10 +2,9 @@ import json
 import requests
 import gzip
 import datetime
-import pymysql.cursors
 import datetime
 import time
-import pandas as pd
+import db_func
 
 url = "http://api.syosetu.com/novelapi/api/"
 
@@ -28,18 +27,8 @@ def get_allcount():
 
     return allcount
 
-def db_connect():
-    db = pymysql.connect(host='narou_api_mariadb',
-                        port=3306,
-                        user='narouDB',
-                        password='narouDB',
-                        database='narou_db',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
-    return db
-
 def check_count():
-    db = db_connect()
+    db = db_func.db_connect()
 
     try:
         with db.cursor() as cursor:
@@ -71,10 +60,10 @@ if __name__ == "__main__":
         exit()
 
 
-    #data = []
-    df_data = pd.DataFrame()
-    df_data_temp = pd.DataFrame()
-    for i in range(allcount // 500 + 10):
+    all_novels_list = []
+    seen_ncodes = set()
+    # APIの仕様上、少し多めにループさせます
+    for i in range(allcount // 500 + 2):
         payload = {"out": "json", "gzip": "5", "lastup":"1073779200-"+str(lastup), "order": "new", "lim": "500"}
 
         retry = 0
@@ -92,18 +81,22 @@ if __name__ == "__main__":
         res_json = json.loads(cont)
         del res_json[0]
 
-        # 不要データをあとで削除できるようにDataframeに入れて管理
-        df_data_temp = pd.json_normalize(res_json)
-        df_data = pd.concat([df_data, df_data_temp], ignore_index=True)
+        # 重複をチェックしながらリストにデータを追加
+        for novel_data in res_json:
+            ncode = novel_data.get("ncode")
+            if ncode and ncode not in seen_ncodes:
+                all_novels_list.append(novel_data)
+                seen_ncodes.add(ncode)
 
         last_general_lastup = res_json[-1]["general_lastup"]
         lastup = datetime.datetime.strptime(last_general_lastup, "%Y-%m-%d %H:%M:%S").timestamp()
         lastup = int(lastup)
         print(res_json[-1]["general_lastup"])
 
-    df_data.drop_duplicates(subset="ncode", inplace=True)
-    df_data.reset_index(drop=True)
+    # narou_json2db.py が期待する {"0": {...}, "1": {...}} の形式に変換
+    output_dict = {str(i): novel for i, novel in enumerate(all_novels_list)}
 
-    df_data.to_json("temp.json", orient="index", force_ascii=False, indent=4)
-  
+    with open("temp.json", "w", encoding="utf-8") as f:
+        json.dump(output_dict, f, ensure_ascii=False, indent=4)
+
     exit()
