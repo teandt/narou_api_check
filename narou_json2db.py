@@ -1,9 +1,6 @@
 import ijson
-import requests
-import gzip
 import datetime
 import pymysql.cursors
-import time
 
 url = "http://api.syosetu.com/novelapi/api/"
 
