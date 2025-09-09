@@ -1,21 +1,11 @@
 import ijson
 import datetime
-import pymysql.cursors
+import db_func
 
 url = "http://api.syosetu.com/novelapi/api/"
 
-def db_connect():
-    db = pymysql.connect(host='localhost',
-                        port=3306,
-                        user='narouDB',
-                        password='narouDB',
-                        database='narou_db',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
-    return db
-
 def check_count():
-    db = db_connect()
+    db = db_func.db_connect()
 
     try:
         with db.cursor() as cursor:
@@ -52,7 +42,7 @@ if __name__ == "__main__":
         with open("../tempdata/temp.json", "rb") as f:
             data_iterator = ijson.kvitems(f, '')
 
-            db = db_connect()
+            db = db_func.db_connect()
             with db.cursor() as cursor:
                 sql = "UPDATE parameter_tbl SET parameter_value = %s WHERE parameter_name = 'counter'"
                 cursor.execute(sql, (cnt + 1))

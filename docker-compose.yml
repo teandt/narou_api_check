@@ -23,7 +23,7 @@ services:
                 - ./db/initdb.d:/docker-entrypoint-initdb.d
                 - ./db/dbconfig:/etc/mysql/conf.d
                 ports: 
-                        - "#{DB_PORT}:3306"
+                        - "${DB_PORT}:3306"
                 environment:
                         MYSQL_USER: ${MYSQL_USER}
                         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
