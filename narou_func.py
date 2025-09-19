@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import db_func
 
 url = "http://api.syosetu.com/novelapi/api/"
+img_dir = "./img"
 
 def check_count():
     db = db_func.db_connect()
@@ -22,16 +23,14 @@ def check_count():
     
     return result["parameter_value"]
 
-def get_title_length_hist():
+def get_title_length_hist(check_year: int, limit_size: int):
     try:
         db = db_func.db_connect()
-        chk = []
-        set_sql_data = []
-        start_year = 2022
-        end_year = 2022
+        cursor = None
+        chk = [] # この変数は使われていないようです
         with db.cursor() as cursor:            
-            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, 10000"
-            cursor.execute(sql, (start_year, end_year,))
+            sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, %s"
+            cursor.execute(sql, (check_year, check_year, limit_size, ))
             print(cursor._executed)
             res = cursor.fetchall()
        
@@ -45,31 +44,29 @@ def get_title_length_hist():
         df = pd.DataFrame(result)
         df["len"].hist()
         print( df["len"].describe() )
-
-        plt.show()    
-
-    except:
-        print("error")
-        print(cursor._executed)
-        print(chk)
+        
+        plt.xlim(0, 100)
+        plt.title(f"Title Length Histogram for {check_year} (Top {limit_size})")
+        plt.xlabel("Title Length")
+        plt.ylabel("Frequency")
+        plt.savefig(f"hist_{check_year}_{limit_size}.png")
+        plt.show()
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
     finally:
         db.close()
 
 
-def get_title_length_mean():
+def get_title_length_mean(start_year: int, end_year: int, limit_size: int):
     try:
         db = db_func.db_connect()
         chk = []
         mean_data = []
         df_mean = pd.DataFrame(columns=["len"])
-        start_year = 2004
-        end_year = 2024
-        limit_size = 10
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "SELECT ncode, title, global_point FROM contents_tbl WHERE general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59' ORDER BY global_point DESC LIMIT 0, %s"
                 cursor.execute(sql, (i, i, limit_size, ))
-                #print(cursor._executed)
                 res = cursor.fetchall()
 
                 result = []
@@ -83,23 +80,30 @@ def get_title_length_mean():
             print(df_mean)
 
             plt.xlim(start_year, end_year)
-            
-            plt.plot(df_mean)
-            plt.show()
+            plt.title(f"Title Length Mean for {start_year} to {end_year} (TOP:{limit_size})")
 
-    except:
-        print("error")
-        print(cursor._executed)
-        print(chk)
+            plt.plot(df_mean)
+            # start_yearとend_yearの差が小さい場合にstepが0になるのを防ぐ
+            if start_year < end_year:
+                step = max(1, int((end_year - start_year) / 5))
+                plt.xticks(range(start_year, end_year + 1, step))
+            else:
+                # 年が同じ場合はその年のみ表示
+                plt.xticks([start_year])
+
+            plt.ylim(0, 50)
+            plt.savefig(f"{img_dir}/plot_top_{start_year}_{end_year}_{limit_size}.png")
+            plt.show()
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
     finally:
         db.close()
 
-def get_nobel_type_nums():
+
+def get_nobel_type_nums(start_year: int, end_year: int):
     try:
         db = db_func.db_connect()
         df = pd.DataFrame(columns=["long", "short"])
-        start_year = 2004
-        end_year = 2024
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "select count(*) from contents_tbl where novel_type = 1 and general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59'"
@@ -114,10 +118,12 @@ def get_nobel_type_nums():
 
 
         plt.xlim(start_year, end_year)
+        plt.title(f"Title Nobel Type Num for {start_year} to {end_year}")
+        plt.xlabel("Title Length")
         plt.xticks(range(start_year, end_year+1, int((end_year-start_year)/5)))
 
         plt.plot(df)
-        plt.savefig("nobel_type_{}-{}".format(start_year, end_year))
+        plt.savefig(f"{img_dir}/nobel_type_{start_year}-{end_year}.png")
         plt.show()
 
         print(df)
@@ -129,10 +135,9 @@ def get_nobel_type_nums():
     finally:
         db.close()
 
-
 # ========================================================================================================================== #
 if __name__ == "__main__":
 
-    #get_title_length_mean()
-    get_nobel_type_nums()
-
+    #get_title_length_mean(2008, 2024, 10000)
+    #get_title_length_hist(2024, 100)
+    get_nobel_type_nums(2008, 2024)
