@@ -1,6 +1,5 @@
 *.json
 *.txt
-img/
 .env
 venv
 __pycache__
