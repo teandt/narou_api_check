@@ -114,15 +114,24 @@ def get_nobel_type_nums(start_year: int, end_year: int):
                 cursor.execute(sql, (i, i, ))
                 r2 = cursor.fetchone()
 
-                df.loc[i] = [r1["count(*)"], r2["count(*)"]]   
+                df.loc[i] = {"long": r1["count(*)"], "short": r2["count(*)"]}
 
 
         plt.xlim(start_year, end_year)
-        plt.title(f"Title Nobel Type Num for {start_year} to {end_year}")
-        plt.xlabel("Title Length")
-        plt.xticks(range(start_year, end_year+1, int((end_year-start_year)/5)))
+        plt.title(f"Novel Type Num for {start_year} to {end_year}")
+        plt.xlabel("Year")
+        plt.ylabel("Count")
+        # start_yearとend_yearの差が小さい場合にstepが0になるのを防ぐ
+        if start_year < end_year:
+            step = max(1, int((end_year - start_year) / 5))
+            plt.xticks(range(start_year, end_year + 1, step))
+        else:
+            # 年が同じ場合はその年のみ表示
+            plt.xticks([start_year])
 
         plt.plot(df)
+        # 凡例を左下に表示します
+        plt.legend(df.columns)
         plt.savefig(f"{img_dir}/nobel_type_{start_year}-{end_year}.png")
         plt.show()
 
