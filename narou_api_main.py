@@ -2,9 +2,9 @@ import json
 import requests
 import gzip
 import datetime
-import datetime
 import time
 import db_func
+import argparse
 
 url = "http://api.syosetu.com/novelapi/api/"
 
@@ -15,11 +15,15 @@ def get_allcount():
     while retry < 5:
         try:
             res = requests.get(url, params=payload)
+            res.raise_for_status()
             break
-        except:
-            print("connection error: not get allcount")
+        except requests.exceptions.RequestException as e:
+            print(f"connection error: not get allcount ({e})")
             retry = retry + 1
             time.sleep(10)
+    else:
+        print("allcountの取得に失敗しました。処理を終了します。")
+        exit(1)
 
     cont = gzip.decompress(res.content).decode("utf-8")
     res_json = json.loads(cont)
@@ -48,14 +52,25 @@ def check_count():
 
 # ========================================================================================================================== #
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="なろうAPIデータ取得",
+        description="なろうAPIから全小説データを取得し、JSONファイルに出力します。"
+    )
+    parser.add_argument(
+        '-o', '--outfile',
+        type=str,
+        default="temp.json",
+        help="出力するJSONファイル名 (デフォルト: temp.json)"
+    )
+    args = parser.parse_args()
 
     lastup = int(datetime.datetime.now().timestamp())
+    print("なろうAPIから作品総数を取得しています...")
     allcount = get_allcount()
+    print(f"作品総数: {allcount}")
 
     cnt = check_count()
-    if cnt >= 0:
-        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-    else:
+    if cnt < 0:
         print("error cnt value")
         exit()
 
@@ -70,11 +85,15 @@ if __name__ == "__main__":
         while retry < 5:
             try:
                 res = requests.get(url, params=payload)
+                res.raise_for_status()
                 break
-            except:
-                print("connection error")
+            except Exception as e:
+                print(f"connection error ({e})")
                 retry = retry + 1
                 time.sleep(10)
+        else:
+            print("APIからのデータ取得に失敗しました。処理を中断します。")
+            exit(1)
 
         # 取得したデータをjsonとして読み込んだあとallcountを削除
         cont = gzip.decompress(res.content).decode("utf-8")
@@ -96,7 +115,9 @@ if __name__ == "__main__":
     # narou_json2db.py が期待する {"0": {...}, "1": {...}} の形式に変換
     output_dict = {str(i): novel for i, novel in enumerate(all_novels_list)}
 
-    with open("temp.json", "w", encoding="utf-8") as f:
+    print(f"取得したデータを {args.outfile} に出力します...")
+    with open(args.outfile, "w", encoding="utf-8") as f:
         json.dump(output_dict, f, ensure_ascii=False, indent=4)
 
+    print("出力が完了しました。")
     exit()

@@ -1,6 +1,7 @@
 import ijson
 import datetime
 import db_func
+import argparse
 
 url = "http://api.syosetu.com/novelapi/api/"
 
@@ -25,9 +26,17 @@ def check_count():
 
 # ========================================================================================================================== #
 if __name__ == "__main__":
-
-    lastup = int(datetime.datetime.now().timestamp())
-    #allcount = get_allcount()
+    parser = argparse.ArgumentParser(
+        prog="なろう小説データDB登録",
+        description="JSONファイルから小説データを読み込み、データベースに登録します。"
+    )
+    parser.add_argument(
+        '-i', '--infile',
+        type=str,
+        default="temp.json",
+        help="入力するJSONファイル名 (デフォルト: temp.json)"
+    )
+    args = parser.parse_args()
 
     cnt = check_count()
     if cnt < 0:
@@ -39,7 +48,8 @@ if __name__ == "__main__":
     db = None
     chk = []
     try:
-        with open("../tempdata/temp.json", "rb") as f:
+        print(f"{args.infile} からデータを読み込んでいます...")
+        with open(args.infile, "rb") as f:
             data_iterator = ijson.kvitems(f, '')
 
             db = db_func.db_connect()
@@ -96,7 +106,7 @@ if __name__ == "__main__":
                 print("end: ", datetime.datetime.now())
 
     except FileNotFoundError:
-        print("error not open file")
+        print(f"エラー: ファイルが見つかりません: {args.infile}")
         exit()
     except Exception as e:
         print("error rollback")

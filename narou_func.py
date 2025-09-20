@@ -103,7 +103,7 @@ def get_title_length_mean(start_year: int, end_year: int, limit_size: int):
 def get_nobel_type_nums(start_year: int, end_year: int):
     try:
         db = db_func.db_connect()
-        df = pd.DataFrame(columns=["long", "short"])
+        df = pd.DataFrame(columns=["連載", "短編"])
         with db.cursor() as cursor:            
             for i in range(start_year, end_year + 1):
                 sql = "select count(*) from contents_tbl where novel_type = 1 and general_firstup BETWEEN '%s-01-01 00:00:00' AND '%s-12-31 23:59:59'"
@@ -114,15 +114,30 @@ def get_nobel_type_nums(start_year: int, end_year: int):
                 cursor.execute(sql, (i, i, ))
                 r2 = cursor.fetchone()
 
-                df.loc[i] = [r1["count(*)"], r2["count(*)"]]   
+                df.loc[i] = {"連載": r1["count(*)"], "短編": r2["count(*)"]}
 
 
         plt.xlim(start_year, end_year)
-        plt.title(f"Title Nobel Type Num for {start_year} to {end_year}")
-        plt.xlabel("Title Length")
-        plt.xticks(range(start_year, end_year+1, int((end_year-start_year)/5)))
+        plt.title(f"Novel Type Num for {start_year} to {end_year}")
+        plt.xlabel("Year")
+        plt.ylabel("Count")
+        # start_yearとend_yearの差が小さい場合にstepが0になるのを防ぐ
+        if start_year < end_year:
+            step = max(1, int((end_year - start_year) / 5))
+            plt.xticks(range(start_year, end_year + 1, step))
+        else:
+            # 年が同じ場合はその年のみ表示
+            plt.xticks([start_year])
 
         plt.plot(df)
+        # plt.legend() # 凡例の代わりにテキストを直接プロットします
+
+        # 各折れ線の終端にテキストを追加
+        # y_pos_r1とy_pos_r2は、テキストが重ならないようにするためのオフセットです
+        y_pos_r1 = df.iloc[-1, 0]
+        y_pos_r2 = df.iloc[-1, 1]
+        plt.text(df.index[-1], y_pos_r1, 'short', va='center')
+        plt.text(df.index[-1], y_pos_r2, 'long', va='center')
         plt.savefig(f"{img_dir}/nobel_type_{start_year}-{end_year}.png")
         plt.show()
 
