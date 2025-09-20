@@ -20,8 +20,6 @@ if __name__ == "__main__":
     parser = ap.ArgumentParser(
         prog="なろうAPIツール",
         description="なろうAPIでDB取得、統計出力するツール")
-    # parser.add_argument('-o', '--outfile', help='APIから全データ取得', type=str, default=default_json_file)
-    # parser.add_argument('-i', '--infile', help='JSONファイルからDBへインポート', type=str, default=default_json_file)
     parser.add_argument('-lm', nargs=3, help='指定された開始年～終了年のタイトル長の平均を出力します。LIMIT_COUNTでTOP N件を指定します。 -lm [start year] [end year] [limit count]', metavar=('START_YEAR', 'END_YEAR', 'LIMIT_COUNT'))
     parser.add_argument('-lh', nargs=2, help='指定された年のタイトル長のヒストグラムを出力します。LIMIT_COUNTでTOP N件を指定します。-lh [year] [limit count]', metavar=('YEAR', 'LIMIT_COUNT'))
     parser.add_argument('-nt', nargs=2, help='指定された開始年～終了年の連載／短編の数を出力します。-nt [start year] [end year]', type=year4_type, metavar=('START_YEAR', 'END_YEAR'))
