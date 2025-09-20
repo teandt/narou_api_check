@@ -20,6 +20,8 @@ $ source venv/bin/activate
 $ python3 -m pip install -r requirements
 $ docker compose pull
 ```
+また、.envでDBの設定をまとめていますので作成してください。  
+.env.exampleに必要な情報をまとめていますので、必要に応じて編集して.envにファイル名を変更してください。  
 環境構築後の実行は以下を行ったあとに実施します。
 ```bash
 $ source venv/bin/activate
