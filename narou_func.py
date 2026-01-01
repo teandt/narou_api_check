@@ -49,7 +49,7 @@ def get_title_length_hist(check_year: int, limit_size: int):
         plt.title(f"Title Length Histogram for {check_year} (Top {limit_size})")
         plt.xlabel("Title Length")
         plt.ylabel("Frequency")
-        plt.savefig(f"hist_{check_year}_{limit_size}.png")
+        plt.savefig(f"{img_dir}/hist_{check_year}_{limit_size}.png")
         plt.show()
     except Exception as e:
         print(f"エラーが発生しました: {e}")
