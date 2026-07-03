@@ -5,8 +5,7 @@ Tests for narou_main module
 import pytest
 import sys
 import os
-from unittest.mock import patch, MagicMock
-from io import StringIO
+from unittest.mock import patch
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,25 +27,11 @@ class TestYear4Type:
         assert narou_main.year4_type("1999") == 1999
         assert narou_main.year4_type("2099") == 2099
 
-    def test_year4_type_short_year(self):
-        """Test that 3-digit year raises error"""
+    @pytest.mark.parametrize("invalid_year", ["202", "20249", "202a", ""])
+    def test_year4_type_invalid_year(self, invalid_year):
+        """Test that invalid year values raise error"""
         with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("202")
-
-    def test_year4_type_long_year(self):
-        """Test that 5-digit year raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("20249")
-
-    def test_year4_type_non_numeric(self):
-        """Test that non-numeric year raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("202a")
-
-    def test_year4_type_empty_string(self):
-        """Test that empty string raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("")
+            narou_main.year4_type(invalid_year)
 
     def test_year4_type_non_year(self):
         """Test that Python datetime's upper valid year is accepted"""
@@ -236,64 +221,21 @@ class TestFunctionCalls:
     def test_lm_calls_get_title_length_mean(self):
         """Test that -lm option calls get_title_length_mean"""
         with patch("narou_main.tm.get_title_length_mean") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument("-lm", nargs=3)
-            parser.add_argument("-lh", nargs=2)
-            parser.add_argument("-nt", nargs=2)
-            args = parser.parse_args(["-lm", "2020", "2024", "100"])
-
-            if args.lm:
-                try:
-                    start_year = narou_main.year4_type(args.lm[0])
-                    end_year = narou_main.year4_type(args.lm[1])
-                    limit_count = int(args.lm[2])
-                    if limit_count >= 1:
-                        mock_func(start_year, end_year, limit_count)
-                except:
-                    pass
+            narou_main.main(["-lm", "2020", "2024", "100"])
 
             mock_func.assert_called_once_with(2020, 2024, 100)
 
     def test_lh_calls_get_title_length_hist(self):
         """Test that -lh option calls get_title_length_hist"""
         with patch("narou_main.tm.get_title_length_hist") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument("-lm", nargs=3)
-            parser.add_argument("-lh", nargs=2)
-            parser.add_argument("-nt", nargs=2)
-            args = parser.parse_args(["-lh", "2024", "100"])
-
-            if args.lh:
-                try:
-                    year = narou_main.year4_type(args.lh[0])
-                    limit_count = int(args.lh[1])
-                    if limit_count >= 1:
-                        mock_func(year, limit_count)
-                except:
-                    pass
+            narou_main.main(["-lh", "2024", "100"])
 
             mock_func.assert_called_once_with(2024, 100)
 
     def test_nt_calls_get_nobel_type_nums(self):
         """Test that -nt option calls get_nobel_type_nums"""
         with patch("narou_main.tm.get_nobel_type_nums") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument(
-                "-nt", nargs=2, type=narou_main.year4_type,
-                metavar=("START_YEAR", "END_YEAR")
-            )
-            args = parser.parse_args(["-nt", "2015", "2024"])
-
-            if args.nt:
-                start_year = args.nt[0]
-                end_year = args.nt[1]
-                mock_func(start_year, end_year)
+            narou_main.main(["-nt", "2015", "2024"])
 
             mock_func.assert_called_once_with(2015, 2024)
 
