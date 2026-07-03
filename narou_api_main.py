@@ -50,8 +50,7 @@ def check_count():
     return result["parameter_value"]
 
 
-# ========================================================================================================================== #
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="なろうAPIデータ取得",
         description="なろうAPIから全小説データを取得し、JSONファイルに出力します。"
@@ -62,7 +61,7 @@ if __name__ == "__main__":
         default="temp.json",
         help="出力するJSONファイル名 (デフォルト: temp.json)"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     lastup = int(datetime.datetime.now().timestamp())
     print("なろうAPIから作品総数を取得しています...")
@@ -73,7 +72,6 @@ if __name__ == "__main__":
     if cnt < 0:
         print("error cnt value")
         exit()
-
 
     all_novels_list = []
     seen_ncodes = set()
@@ -120,4 +118,9 @@ if __name__ == "__main__":
         json.dump(output_dict, f, ensure_ascii=False, indent=4)
 
     print("出力が完了しました。")
-    exit()
+    return 0
+
+
+# ========================================================================================================================== #
+if __name__ == "__main__":
+    main()

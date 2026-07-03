@@ -79,16 +79,17 @@ def get_title_length_mean(start_year: int, end_year: int, limit_size: int):
                 df_mean.loc[i] = df["len"].mean()
             print(df_mean)
 
-            plt.xlim(start_year, end_year)
             plt.title(f"Title Length Mean for {start_year} to {end_year} (TOP:{limit_size})")
 
             plt.plot(df_mean)
             # start_yearとend_yearの差が小さい場合にstepが0になるのを防ぐ
             if start_year < end_year:
+                plt.xlim(start_year, end_year)
                 step = max(1, int((end_year - start_year) / 5))
                 plt.xticks(range(start_year, end_year + 1, step))
             else:
-                # 年が同じ場合はその年のみ表示
+                # 年が同じ場合はxlimに幅を持たせ、警告を防ぐ
+                plt.xlim(start_year - 0.5, start_year + 0.5)
                 plt.xticks([start_year])
 
             plt.ylim(0, 50)
@@ -117,16 +118,17 @@ def get_nobel_type_nums(start_year: int, end_year: int):
                 df.loc[i] = {"long": r1["count(*)"], "short": r2["count(*)"]}
 
 
-        plt.xlim(start_year, end_year)
         plt.title(f"Novel Type Num for {start_year} to {end_year}")
         plt.xlabel("Year")
         plt.ylabel("Count")
         # start_yearとend_yearの差が小さい場合にstepが0になるのを防ぐ
         if start_year < end_year:
+            plt.xlim(start_year, end_year)
             step = max(1, int((end_year - start_year) / 5))
             plt.xticks(range(start_year, end_year + 1, step))
         else:
-            # 年が同じ場合はその年のみ表示
+            # 年が同じ場合はxlimに幅を持たせ、警告を防ぐ
+            plt.xlim(start_year - 0.5, start_year + 0.5)
             plt.xticks([start_year])
 
         plt.plot(df)
