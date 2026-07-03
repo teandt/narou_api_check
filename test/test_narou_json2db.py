@@ -3,11 +3,9 @@ Tests for narou_json2db module
 """
 
 import pytest
-import json
 import os
 import sys
 from unittest.mock import MagicMock, patch, mock_open
-from io import BytesIO
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -52,7 +50,7 @@ class TestCheckCount:
 class TestMainScript:
     """Tests for main script execution"""
 
-    def test_main_default_input_file(self, sample_novel_data, mock_db_connection):
+    def test_main_default_input_file(self, mock_db_connection):
         """Test that default input file is temp.json"""
         mock_cursor = MagicMock()
         mock_db_connection.cursor.return_value.__enter__ = MagicMock(
@@ -75,7 +73,7 @@ class TestMainScript:
             mock_db_connection.commit.assert_called_once()
             mock_db_connection.close.assert_called_once()
 
-    def test_main_custom_input_file(self, sample_novel_data, mock_db_connection):
+    def test_main_custom_input_file(self, mock_db_connection):
         """Test that custom input file is used with -i option"""
         mock_cursor = MagicMock()
         mock_db_connection.cursor.return_value.__enter__ = MagicMock(
@@ -136,34 +134,30 @@ class TestMainScript:
             assert "T" in timestamp  # ISO format contains T
             assert len(timestamp) > 0
 
-    def test_file_not_found_error(self, mock_db_connection):
+    def test_file_not_found_error(self):
         """Test handling of missing file"""
         with patch("narou_json2db.check_count") as mock_check_count, patch(
-            "narou_json2db.exit"
+            "builtins.exit", side_effect=SystemExit
         ) as mock_exit:
             mock_check_count.return_value = 0
 
             with patch("builtins.open") as mock_file:
                 mock_file.side_effect = FileNotFoundError("File not found")
 
-                try:
-                    with open("nonexistent.json", "rb") as f:
-                        pass
-                except FileNotFoundError:
-                    assert True
-                else:
-                    pytest.fail("FileNotFoundError not raised")
+                with pytest.raises(SystemExit):
+                    narou_json2db.main(["-i", "nonexistent.json"])
 
-    def test_invalid_counter_exits(self, mock_db_connection):
+                mock_exit.assert_called_once()
+
+    def test_invalid_counter_exits(self):
         """Test that script exits when counter is invalid"""
         with patch("narou_json2db.check_count") as mock_check_count, patch(
-            "narou_json2db.exit"
+            "builtins.exit", side_effect=SystemExit
         ) as mock_exit:
             mock_check_count.return_value = -1
 
-            cnt = mock_check_count()
-            if cnt < 0:
-                mock_exit()
+            with pytest.raises(SystemExit):
+                narou_json2db.main([])
 
             mock_exit.assert_called_once()
 
@@ -230,9 +224,6 @@ class TestMainScript:
         mock_db_connection.cursor.return_value.__enter__ = MagicMock(
             return_value=mock_cursor
         )
-
-        # Empty JSON file should be handled gracefully
-        json_data = json.dumps({}).encode("utf-8")
 
         with patch("narou_json2db.ijson.kvitems") as mock_kvitems:
             mock_kvitems.return_value = []
