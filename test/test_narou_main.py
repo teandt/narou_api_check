@@ -221,64 +221,21 @@ class TestFunctionCalls:
     def test_lm_calls_get_title_length_mean(self):
         """Test that -lm option calls get_title_length_mean"""
         with patch("narou_main.tm.get_title_length_mean") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument("-lm", nargs=3)
-            parser.add_argument("-lh", nargs=2)
-            parser.add_argument("-nt", nargs=2)
-            args = parser.parse_args(["-lm", "2020", "2024", "100"])
-
-            if args.lm:
-                try:
-                    start_year = narou_main.year4_type(args.lm[0])
-                    end_year = narou_main.year4_type(args.lm[1])
-                    limit_count = int(args.lm[2])
-                    if limit_count >= 1:
-                        mock_func(start_year, end_year, limit_count)
-                except:
-                    pass
+            narou_main.main(["-lm", "2020", "2024", "100"])
 
             mock_func.assert_called_once_with(2020, 2024, 100)
 
     def test_lh_calls_get_title_length_hist(self):
         """Test that -lh option calls get_title_length_hist"""
         with patch("narou_main.tm.get_title_length_hist") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument("-lm", nargs=3)
-            parser.add_argument("-lh", nargs=2)
-            parser.add_argument("-nt", nargs=2)
-            args = parser.parse_args(["-lh", "2024", "100"])
-
-            if args.lh:
-                try:
-                    year = narou_main.year4_type(args.lh[0])
-                    limit_count = int(args.lh[1])
-                    if limit_count >= 1:
-                        mock_func(year, limit_count)
-                except:
-                    pass
+            narou_main.main(["-lh", "2024", "100"])
 
             mock_func.assert_called_once_with(2024, 100)
 
     def test_nt_calls_get_nobel_type_nums(self):
         """Test that -nt option calls get_nobel_type_nums"""
         with patch("narou_main.tm.get_nobel_type_nums") as mock_func:
-            import argparse as ap
-
-            parser = ap.ArgumentParser()
-            parser.add_argument(
-                "-nt", nargs=2, type=narou_main.year4_type,
-                metavar=("START_YEAR", "END_YEAR")
-            )
-            args = parser.parse_args(["-nt", "2015", "2024"])
-
-            if args.nt:
-                start_year = args.nt[0]
-                end_year = args.nt[1]
-                mock_func(start_year, end_year)
+            narou_main.main(["-nt", "2015", "2024"])
 
             mock_func.assert_called_once_with(2015, 2024)
 
