@@ -54,25 +54,49 @@ class TestMainScript:
 
     def test_main_default_input_file(self, sample_novel_data, mock_db_connection):
         """Test that default input file is temp.json"""
-        import argparse
+        mock_cursor = MagicMock()
+        mock_db_connection.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-i", "--infile", type=str, default="temp.json")
-        args = parser.parse_args([])
+        with patch("narou_json2db.check_count") as mock_check_count, patch(
+            "builtins.open", mock_open(read_data=b"{}")
+        ) as mock_file, patch("narou_json2db.db_func.db_connect") as mock_connect, patch(
+            "narou_json2db.ijson.kvitems"
+        ) as mock_kvitems:
+            mock_check_count.return_value = 0
+            mock_connect.return_value = mock_db_connection
+            mock_kvitems.return_value = []
 
-        assert args.infile == "temp.json"
+            result = narou_json2db.main([])
+
+            assert result == 0
+            mock_file.assert_called_once_with("temp.json", "rb")
+            mock_db_connection.commit.assert_called_once()
+            mock_db_connection.close.assert_called_once()
 
     def test_main_custom_input_file(self, sample_novel_data, mock_db_connection):
         """Test that custom input file is used with -i option"""
-        json_data = json.dumps(sample_novel_data).encode("utf-8")
+        mock_cursor = MagicMock()
+        mock_db_connection.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
 
-        import argparse
+        with patch("narou_json2db.check_count") as mock_check_count, patch(
+            "builtins.open", mock_open(read_data=b"{}")
+        ) as mock_file, patch("narou_json2db.db_func.db_connect") as mock_connect, patch(
+            "narou_json2db.ijson.kvitems"
+        ) as mock_kvitems:
+            mock_check_count.return_value = 0
+            mock_connect.return_value = mock_db_connection
+            mock_kvitems.return_value = []
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-i", "--infile", type=str, default="temp.json")
-        args = parser.parse_args(["-i", "custom.json"])
+            result = narou_json2db.main(["-i", "custom.json"])
 
-        assert args.infile == "custom.json"
+            assert result == 0
+            mock_file.assert_called_once_with("custom.json", "rb")
+            mock_db_connection.commit.assert_called_once()
+            mock_db_connection.close.assert_called_once()
 
     def test_counter_value_incremented(self, mock_db_connection):
         """Test that counter is incremented in database"""

@@ -131,23 +131,35 @@ class TestMainScript:
 
     def test_main_default_output_file(self, sample_api_response):
         """Test that default output file is temp.json"""
-        import argparse
+        with patch("narou_api_main.get_allcount") as mock_allcount, patch(
+            "narou_api_main.check_count"
+        ) as mock_check_count, patch("builtins.open", mock_open()) as mock_file, patch(
+            "narou_api_main.json.dump"
+        ) as mock_dump:
+            mock_allcount.return_value = -1000
+            mock_check_count.return_value = 0
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-o", "--outfile", type=str, default="temp.json")
-        args = parser.parse_args([])
+            result = narou_api_main.main([])
 
-        assert args.outfile == "temp.json"
+            assert result == 0
+            mock_file.assert_called_once_with("temp.json", "w", encoding="utf-8")
+            mock_dump.assert_called_once_with({}, mock_file(), ensure_ascii=False, indent=4)
 
     def test_main_custom_output_file(self, sample_api_response):
         """Test that custom output file is used with -o option"""
-        import argparse
+        with patch("narou_api_main.get_allcount") as mock_allcount, patch(
+            "narou_api_main.check_count"
+        ) as mock_check_count, patch("builtins.open", mock_open()) as mock_file, patch(
+            "narou_api_main.json.dump"
+        ) as mock_dump:
+            mock_allcount.return_value = -1000
+            mock_check_count.return_value = 0
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-o", "--outfile", type=str, default="temp.json")
-        args = parser.parse_args(["-o", "custom.json"])
+            result = narou_api_main.main(["-o", "custom.json"])
 
-        assert args.outfile == "custom.json"
+            assert result == 0
+            mock_file.assert_called_once_with("custom.json", "w", encoding="utf-8")
+            mock_dump.assert_called_once_with({}, mock_file(), ensure_ascii=False, indent=4)
 
     def test_main_exits_on_invalid_counter(self):
         """Test that script exits when counter is invalid"""
@@ -156,11 +168,10 @@ class TestMainScript:
         ) as mock_check_count, patch("narou_api_main.exit") as mock_exit:
             mock_allcount.return_value = 500
             mock_check_count.return_value = -1
+            mock_exit.side_effect = SystemExit
 
-            # Simulate main logic
-            cnt = mock_check_count()
-            if cnt < 0:
-                mock_exit()
+            with pytest.raises(SystemExit):
+                narou_api_main.main([])
 
             mock_exit.assert_called_once()
 
