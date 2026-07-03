@@ -44,10 +44,16 @@ pytest test/test_db_func.py::TestDbConnect::test_db_connect_success_with_env -v
 ### テストカバレッジレポートを生成
 
 ```bash
-pytest test/ --cov=. --cov-report=html
+pytest test/ --cov=. --cov-report=term-missing --cov-report=html --cov-report=xml
 ```
 
-カバレッジレポートは `htmlcov/index.html` に生成されます。
+カバレッジ設定はリポジトリルートの `.coveragerc` に定義しています。
+
+- 端末レポート: 未カバー行を `term-missing` で表示
+- HTMLレポート: `htmlcov/index.html`
+- XMLレポート: `coverage.xml`
+
+測定対象は主要 Python モジュールで、`test/`、仮想環境、`htmlcov/`、site-packages は除外します。
 
 ### テスト失敗時の詳細表示
 
