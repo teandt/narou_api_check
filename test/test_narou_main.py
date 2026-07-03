@@ -49,9 +49,8 @@ class TestYear4Type:
             narou_main.year4_type("")
 
     def test_year4_type_non_year(self):
-        """Test that invalid year values raise error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("9999")  # This might be valid depending on implementation
+        """Test that Python datetime's upper valid year is accepted"""
+        assert narou_main.year4_type("9999") == 9999
 
 
 class TestMainArgumentParsing:

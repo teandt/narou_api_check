@@ -54,36 +54,13 @@ class TestMainScript:
 
     def test_main_default_input_file(self, sample_novel_data, mock_db_connection):
         """Test that default input file is temp.json"""
-        json_data = json.dumps(sample_novel_data).encode("utf-8")
+        import argparse
 
-        with patch("narou_json2db.sys.argv", ["narou_json2db.py"]), patch(
-            "narou_json2db.check_count"
-        ) as mock_check_count, patch(
-            "builtins.open", mock_open(read_data=json_data)
-        ) as mock_file, patch(
-            "narou_json2db.db_func.db_connect"
-        ) as mock_connect, patch(
-            "narou_json2db.ijson.kvitems"
-        ) as mock_kvitems, patch(
-            "narou_json2db.exit"
-        ):
-            mock_check_count.return_value = 0
-            mock_connect.return_value = mock_db_connection
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", "--infile", type=str, default="temp.json")
+        args = parser.parse_args([])
 
-            mock_cursor = MagicMock()
-            mock_db_connection.cursor.return_value.__enter__ = MagicMock(
-                return_value=mock_cursor
-            )
-            mock_kvitems.return_value = []
-
-            # Test argument parsing
-            import argparse
-
-            parser = argparse.ArgumentParser()
-            parser.add_argument("-i", "--infile", type=str, default="temp.json")
-            args = parser.parse_args([])
-
-            assert args.infile == "temp.json"
+        assert args.infile == "temp.json"
 
     def test_main_custom_input_file(self, sample_novel_data, mock_db_connection):
         """Test that custom input file is used with -i option"""

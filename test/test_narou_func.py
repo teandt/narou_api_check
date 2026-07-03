@@ -121,14 +121,19 @@ class TestGetTitleLengthHist:
 
     def test_get_title_length_hist_db_error(self, mock_db_connection):
         """Test error handling in histogram generation"""
-        mock_db_connection.cursor.side_effect = Exception("DB Error")
+        mock_db_connection.cursor.return_value.__enter__.side_effect = Exception(
+            "DB Error"
+        )
 
-        with patch("narou_func.db_func.db_connect") as mock_connect:
+        with patch("narou_func.db_func.db_connect") as mock_connect, patch(
+            "builtins.print"
+        ) as mock_print:
             mock_connect.return_value = mock_db_connection
 
-            # Should handle exception gracefully
-            with pytest.raises(Exception):
-                narou_func.get_title_length_hist(2024, 100)
+            narou_func.get_title_length_hist(2024, 100)
+
+            mock_print.assert_any_call("エラーが発生しました: DB Error")
+            mock_db_connection.close.assert_called_once()
 
 
 class TestGetTitleLengthMean:

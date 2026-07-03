@@ -5,6 +5,7 @@ Tests for db_func module
 import pytest
 import os
 import pymysql
+import importlib
 from unittest.mock import MagicMock, patch
 import sys
 
@@ -76,11 +77,9 @@ class TestDbConnect:
 
     def test_db_connect_loads_env_file(self, mock_env, monkeypatch):
         """Test that .env file is loaded"""
-        with patch("db_func.load_dotenv") as mock_load_dotenv:
-            with patch("db_func.pymysql.connect") as mock_connect:
-                mock_conn = MagicMock()
-                mock_connect.return_value = mock_conn
+        with patch("dotenv.load_dotenv") as mock_load_dotenv:
+            importlib.reload(db_func)
 
-                db_func.db_connect()
+            mock_load_dotenv.assert_called_once_with(".env")
 
-                mock_load_dotenv.assert_called_once_with(".env")
+        importlib.reload(db_func)

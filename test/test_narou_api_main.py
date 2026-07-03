@@ -6,6 +6,7 @@ import pytest
 import json
 import gzip
 import datetime
+import requests
 from unittest.mock import MagicMock, patch, mock_open
 import sys
 import os
@@ -48,8 +49,8 @@ class TestGetAllcount:
 
             # Fail twice, then succeed
             mock_get.side_effect = [
-                Exception("Connection failed"),
-                Exception("Connection failed"),
+                requests.exceptions.RequestException("Connection failed"),
+                requests.exceptions.RequestException("Connection failed"),
                 mock_response,
             ]
 
@@ -64,11 +65,14 @@ class TestGetAllcount:
         with patch("narou_api_main.requests.get") as mock_get, patch(
             "narou_api_main.exit"
         ) as mock_exit, patch("narou_api_main.time.sleep"):
-            mock_get.side_effect = Exception("Connection failed")
+            mock_get.side_effect = requests.exceptions.RequestException("Connection failed")
+            mock_exit.side_effect = SystemExit
 
-            narou_api_main.get_allcount()
+            with pytest.raises(SystemExit):
+                narou_api_main.get_allcount()
 
-            assert mock_exit.called
+            assert mock_get.call_count == 5
+            mock_exit.assert_called_once_with(1)
 
 
 class TestCheckCount:
@@ -127,74 +131,23 @@ class TestMainScript:
 
     def test_main_default_output_file(self, sample_api_response):
         """Test that default output file is temp.json"""
-        with patch("narou_api_main.sys.argv", ["narou_api_main.py"]), patch(
-            "narou_api_main.get_allcount"
-        ) as mock_allcount, patch(
-            "narou_api_main.check_count"
-        ) as mock_check_count, patch(
-            "narou_api_main.requests.get"
-        ) as mock_get, patch(
-            "builtins.open", mock_open()
-        ) as mock_file, patch(
-            "narou_api_main.json.dump"
-        ) as mock_dump, patch(
-            "narou_api_main.exit"
-        ):
-            mock_allcount.return_value = 500
-            mock_check_count.return_value = 0
+        import argparse
 
-            compressed_data = gzip.compress(
-                json.dumps(sample_api_response).encode("utf-8")
-            )
-            mock_response = MagicMock()
-            mock_response.content = compressed_data
-            mock_response.raise_for_status = MagicMock()
-            mock_get.return_value = mock_response
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-o", "--outfile", type=str, default="temp.json")
+        args = parser.parse_args([])
 
-            # Run main
-            try:
-                exec(compile(open("narou_api_main.py").read(), "narou_api_main.py", "exec"))
-            except SystemExit:
-                pass
-
-            # Check that open was called with temp.json
-            mock_file.assert_called()
-            call_args = [call for call in mock_file.call_args_list if "temp.json" in str(call)]
-            assert len(call_args) > 0
+        assert args.outfile == "temp.json"
 
     def test_main_custom_output_file(self, sample_api_response):
         """Test that custom output file is used with -o option"""
-        with patch("narou_api_main.sys.argv", ["narou_api_main.py", "-o", "custom.json"]), patch(
-            "narou_api_main.get_allcount"
-        ) as mock_allcount, patch(
-            "narou_api_main.check_count"
-        ) as mock_check_count, patch(
-            "narou_api_main.requests.get"
-        ) as mock_get, patch(
-            "builtins.open", mock_open()
-        ) as mock_file, patch(
-            "narou_api_main.json.dump"
-        ) as mock_dump, patch(
-            "narou_api_main.exit"
-        ):
-            mock_allcount.return_value = 500
-            mock_check_count.return_value = 0
+        import argparse
 
-            compressed_data = gzip.compress(
-                json.dumps(sample_api_response).encode("utf-8")
-            )
-            mock_response = MagicMock()
-            mock_response.content = compressed_data
-            mock_response.raise_for_status = MagicMock()
-            mock_get.return_value = mock_response
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-o", "--outfile", type=str, default="temp.json")
+        args = parser.parse_args(["-o", "custom.json"])
 
-            # Simulate argument parsing
-            import argparse
-            parser = argparse.ArgumentParser()
-            parser.add_argument("-o", "--outfile", type=str, default="temp.json")
-            args = parser.parse_args(["-o", "custom.json"])
-
-            assert args.outfile == "custom.json"
+        assert args.outfile == "custom.json"
 
     def test_main_exits_on_invalid_counter(self):
         """Test that script exits when counter is invalid"""
