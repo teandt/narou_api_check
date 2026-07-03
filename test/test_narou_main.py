@@ -5,8 +5,7 @@ Tests for narou_main module
 import pytest
 import sys
 import os
-from unittest.mock import patch, MagicMock
-from io import StringIO
+from unittest.mock import patch
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,25 +27,11 @@ class TestYear4Type:
         assert narou_main.year4_type("1999") == 1999
         assert narou_main.year4_type("2099") == 2099
 
-    def test_year4_type_short_year(self):
-        """Test that 3-digit year raises error"""
+    @pytest.mark.parametrize("invalid_year", ["202", "20249", "202a", ""])
+    def test_year4_type_invalid_year(self, invalid_year):
+        """Test that invalid year values raise error"""
         with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("202")
-
-    def test_year4_type_long_year(self):
-        """Test that 5-digit year raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("20249")
-
-    def test_year4_type_non_numeric(self):
-        """Test that non-numeric year raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("202a")
-
-    def test_year4_type_empty_string(self):
-        """Test that empty string raises error"""
-        with pytest.raises(Exception):  # ArgumentTypeError
-            narou_main.year4_type("")
+            narou_main.year4_type(invalid_year)
 
     def test_year4_type_non_year(self):
         """Test that Python datetime's upper valid year is accepted"""
