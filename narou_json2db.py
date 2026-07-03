@@ -24,8 +24,7 @@ def check_count():
     return result["parameter_value"]
 
 
-# ========================================================================================================================== #
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="なろう小説データDB登録",
         description="JSONファイルから小説データを読み込み、データベースに登録します。"
@@ -36,7 +35,7 @@ if __name__ == "__main__":
         default="temp.json",
         help="入力するJSONファイル名 (デフォルト: temp.json)"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     cnt = check_count()
     if cnt < 0:
@@ -120,3 +119,10 @@ if __name__ == "__main__":
     finally:
         if db:
             db.close()
+
+    return 0
+
+
+# ========================================================================================================================== #
+if __name__ == "__main__":
+    main()
