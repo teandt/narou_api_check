@@ -1,14 +1,19 @@
-# なろうAPIツール - テスト実行ガイド
+# なろうAPIツール - テストガイド
+
+このディレクトリには、なろうAPIツールの単体テストとテスト仕様書を配置しています。
+テストの詳細な観点は [testspec.md](testspec.md) を参照してください。
 
 ## テスト環境のセットアップ
 
-### 必要なパッケージをインストール
+リポジトリルートで仮想環境を有効化し、依存パッケージをインストールします。
 
 ```bash
 cd /home/tea/code/narou_api
 source venv/bin/activate
-pip install -r requirements
+python3 -m pip install -r requirements
 ```
+
+`requirements` には `pytest`、`pytest-cov`、`pytest-mock`、`coverage` も含まれています。
 
 ## テスト実行方法
 
@@ -41,20 +46,6 @@ pytest test/test_narou_main.py::TestYear4Type -v
 pytest test/test_db_func.py::TestDbConnect::test_db_connect_success_with_env -v
 ```
 
-### テストカバレッジレポートを生成
-
-```bash
-pytest test/ --cov=. --cov-report=term-missing --cov-report=html --cov-report=xml
-```
-
-カバレッジ設定はリポジトリルートの `.coveragerc` に定義しています。
-
-- 端末レポート: 未カバー行を `term-missing` で表示
-- HTMLレポート: `htmlcov/index.html`
-- XMLレポート: `coverage.xml`
-
-測定対象は主要 Python モジュールで、`test/`、仮想環境、`htmlcov/`、site-packages は除外します。
-
 ### テスト失敗時の詳細表示
 
 ```bash
@@ -67,104 +58,96 @@ pytest test/ -vv --tb=long
 pytest test/ -v --durations=10
 ```
 
-## テストファイル構成
+## カバレッジ
 
-| ファイル | 対象モジュール | テスト項目数 |
-|--------|-------------|---------|
-| [test/conftest.py](conftest.py) | 共通フィクスチャ | - |
-| [test/test_db_func.py](test_db_func.py) | db_func.py | 7 |
-| [test/test_narou_api_main.py](test_narou_api_main.py) | narou_api_main.py | 12 |
-| [test/test_narou_json2db.py](test_narou_json2db.py) | narou_json2db.py | 12 |
-| [test/test_narou_func.py](test_narou_func.py) | narou_func.py | 16 |
-| [test/test_narou_main.py](test_narou_main.py) | narou_main.py | 31 |
-
-**合計: 78テストケース**
-
-## テスト実行結果
-
-最後のテスト実行結果：
-
-```
-✅ 70+ テストが成功
-⚠️ 8 テストが失敗（主にモック設定の調整が必要）
-```
-
-### 失敗しているテスト（調整予定）
-
-| テスト | 原因 | 対応 |
-|-------|------|------|
-| test_db_connect_missing_env_var | DB接続エラー | モック調整 |
-| test_db_connect_loads_env_file | load_dotenv モック | import パッチ調整 |
-| test_get_allcount_retry_on_failure | リトライロジック | 例外ハンドリング改善 |
-| その他 | テスト設計 | テストケース最適化 |
-
-## テスト仕様書
-
-詳細なテスト仕様は [test/testspec.md](testspec.md) を参照してください。
-
-## モック・フィクスチャの利用
-
-[conftest.py](conftest.py) で定義されているフィクスチャ：
-
-- `mock_env` - 環境変数のモック
-- `mock_db_connection` - データベース接続のモック
-- `sample_novel_data` - サンプル小説データ
-- `sample_api_response` - サンプルAPI応答
-
-## テスト駆動開発（TDD）ワークフロー
-
-1. テスト仕様書（[testspec.md](testspec.md)）を参照
-2. 各テストを個別に実行して検証
-3. 機能実装前にテストを作成
-4. テストが通るまでコードを改善
-5. 回帰テストで既存機能を検証
-
-## CI/CD統合
-
-GitHub Actions で自動テストを実行する場合：
-
-```yaml
-- name: Run tests
-  run: |
-    source venv/bin/activate
-    pytest test/ -v --tb=short
-```
-
-## パフォーマンステスト
-
-大規模データでのパフォーマンステスト：
+カバレッジ設定はリポジトリルートの `.coveragerc` に定義しています。
 
 ```bash
-pytest test/ -v -m "performance"
+pytest test/ --cov=. --cov-report=term-missing --cov-report=html --cov-report=xml
 ```
+
+- 端末レポート: 未カバー行を `term-missing` で表示
+- HTMLレポート: `htmlcov/index.html`
+- XMLレポート: `coverage.xml`
+
+測定対象はリポジトリルート配下の Python モジュールです。
+`test/`、`venv/`、`.venv/`、`htmlcov/`、site-packages は除外します。
+
+## テストファイル構成
+
+| ファイル | 対象モジュール | 主な確認内容 | テスト数 |
+|--------|-------------|------------|--------|
+| [conftest.py](conftest.py) | 共通フィクスチャ | 環境変数、DB接続、サンプルデータ、API応答 | - |
+| [test_db_func.py](test_db_func.py) | `db_func.py` | DB接続設定、文字セット、DictCursor、ポート不正、接続エラー、`.env`読み込み | 6 |
+| [test_narou_api_main.py](test_narou_api_main.py) | `narou_api_main.py` | allcount取得、リトライ、カウンター確認、出力ファイル指定、JSON形式、重複排除、UTF-8 | 12 |
+| [test_narou_json2db.py](test_narou_json2db.py) | `narou_json2db.py` | カウンター確認、引数解析、登録行生成、1000件バッチ、入力ファイル指定、ロールバック | 13 |
+| [test_narou_func.py](test_narou_func.py) | `narou_func.py` | カウンター確認、ヒストグラム、タイトル長平均、連載/短編数、グラフ出力パス | 16 |
+| [test_narou_main.py](test_narou_main.py) | `narou_main.py` | 年指定バリデーション、引数解析、各オプションの入力検証、関数呼び出し、エラー処理 | 27 |
+
+**合計: 74テストケース**
+
+テスト数を確認する場合は、次のように実ファイルから数えられます。
+
+```bash
+rg -c "^    def test_" test/test_*.py
+```
+
+## 共通フィクスチャ
+
+[conftest.py](conftest.py) で以下のフィクスチャを定義しています。
+
+- `mock_env` - DB接続用の環境変数を設定
+- `mock_db_connection` - DB接続オブジェクトとカーソルのモック
+- `sample_novel_data` - 小説データのサンプル
+- `sample_api_response` - なろうAPI応答のサンプル
+
+テストは外部APIや実DBへ直接接続せず、`unittest.mock.patch` と共通フィクスチャで依存先を差し替える構成です。
+
+## テスト対象の概要
+
+- `db_func.py`: `.env` と環境変数を使った MySQL 接続
+- `narou_api_main.py`: なろうAPIからの件数取得、JSON出力、カウンター確認
+- `narou_json2db.py`: JSON入力、DB登録用データ生成、バッチ登録、トランザクション処理
+- `narou_func.py`: DB取得結果を使った統計処理とグラフ出力
+- `narou_main.py`: コマンドライン引数の解釈と各処理関数の呼び出し
+
+## 注意点
+
+- `test_narou_func.py` は matplotlib のバックエンドに `Agg` を使用します。
+- グラフ生成処理は `plt.savefig` や `plt.show` をモックして検証しています。
+- 実DBを使った結合テストや、なろうAPIへの実通信テストはこのテスト群には含まれていません。
+- `pytest -m "performance"` で実行できる performance マーカー付きテストは現時点では定義されていません。
 
 ## トラブルシューティング
 
-### テスト実行時にモジュールが見つからないエラー
+### モジュールが見つからない
+
+リポジトリルートから実行してください。
 
 ```bash
-# test/ ディレクトリで以下を実行
-cd test
-pytest -v
+cd /home/tea/code/narou_api
+pytest test/ -v
 ```
 
-### データベース接続エラー
+各テストファイルでは親ディレクトリを `sys.path` に追加して、ルート直下のモジュールを import しています。
+
+### DB接続エラー
+
+通常の単体テストではDB接続をモックします。
+実DBを使って手動確認する場合は、`.env` のDB設定と Docker Compose の起動状態を確認してください。
 
 ```bash
-# .env ファイルが存在し、DB情報が正しいか確認
-cat .env
-docker compose up -d  # DB を起動
+docker compose up
 ```
 
-### matplotlib エラー
+### matplotlib のGUI表示
 
-テスト環境では `Agg` バックエンドを使用しているため、GUI表示は不可です。
-テストで生成されたグラフは `img/` ディレクトリに保存されます。
+テストではGUI表示を使わず、`Agg` バックエンドで検証します。
+そのため、テスト実行中にグラフ画面は表示されません。
 
-## 推奨事項
+## テスト追加時の目安
 
-- [ ] 失敗しているテストのモック調整
-- [ ] カバレッジを 80% 以上に増やす
-- [ ] パフォーマンステストの追加
-- [ ] e2eテストの実装
-- [ ] CI/CD パイプラインの構築
+1. 既存の対象モジュールに近いテストファイルへ追加する。
+2. 外部API、DB、ファイルI/O、グラフ出力は必要に応じてモックする。
+3. 仕様レベルの観点を追加した場合は [testspec.md](testspec.md) も更新する。
+4. 実行コマンドとテスト数が変わる場合は、このREADMEも更新する。
